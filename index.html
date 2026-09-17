@@ -395,6 +395,52 @@ function parallelogramSVG(opts){
   return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:360px" role="img">'+s+'</svg>';
 }
 
+/* Parallelogram anchored at the origin of a numbered axis grid, so AB/AD (and the
+   optional diagonal) can be double-checked by counting squares, same idea as axisVectorSVG. */
+function parallelogramAxisSVG(opts){
+  var cell=32, padL=32,padT=18,padB=30,padR=20;
+  var cols=opts.cols, rows=opts.rows;
+  function X(cx){ return padL+cx*cell; }
+  function Y(cy){ return padT+(rows-cy)*cell; }
+  var w=padL+cols*cell+padR, h=padT+rows*cell+padB;
+  var s='';
+  for(var c=0;c<=cols;c++) s+='<line x1="'+X(c)+'" y1="'+padT+'" x2="'+X(c)+'" y2="'+(padT+rows*cell)+'" stroke="var(--grid-line)" stroke-width="1"/>';
+  for(var r=0;r<=rows;r++) s+='<line x1="'+padL+'" y1="'+Y(r)+'" x2="'+(padL+cols*cell)+'" y2="'+Y(r)+'" stroke="var(--grid-line)" stroke-width="1"/>';
+  s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(padL+cols*cell)+'" y2="'+Y(0)+'" stroke="var(--text-dim)" stroke-width="2"/>';
+  s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(padT+rows*cell)+'" stroke="var(--text-dim)" stroke-width="2"/>';
+  for(var c=0;c<=cols;c++){
+    s+='<text x="'+X(c)+'" y="'+(Y(0)+16)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="middle">'+c+'</text>';
+  }
+  for(var r=1;r<=rows;r++){
+    s+='<text x="'+(X(0)-8)+'" y="'+(Y(r)+4)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">'+r+'</text>';
+  }
+  s+='<text x="'+(X(0)-8)+'" y="'+(Y(0)+16)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">0</text>';
+
+  function arrow(x0,y0,x1,y1,color,label,side){
+    var X0=X(x0),Y0=Y(y0),X1=X(x1),Y1=Y(y1);
+    var dx=X1-X0,dy=Y1-Y0,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,ah=10,aw=6.5;
+    var bx=X1-ux*ah, by=Y1-uy*ah, px=-uy,py=ux;
+    var p1x=bx+px*aw/2,p1y=by+py*aw/2,p2x=bx-px*aw/2,p2y=by-py*aw/2;
+    var out='<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="'+color+'" stroke-width="3" stroke-linecap="round"/>';
+    out+='<polygon points="'+X1+','+Y1+' '+p1x+','+p1y+' '+p2x+','+p2y+'" fill="'+color+'"/>';
+    if(label){
+      var mx=(X0+X1)/2, my=(Y0+Y1)/2;
+      var lx=mx+(side==='left'?-18:(side==='right'?18:0));
+      var ly=my+(side==='below'?18:-10);
+      out+='<text x="'+lx+'" y="'+ly+'" font-family="Unbounded" font-weight="700" font-size="13" fill="'+color+'" text-anchor="middle">'+label+'</text>';
+    }
+    return out;
+  }
+
+  s += arrow(0,0, opts.ab.x,opts.ab.y, 'var(--blue)', opts.abLabel||'a', 'above');
+  s += arrow(0,0, opts.ad.x,opts.ad.y, 'var(--pink)', opts.adLabel||'b', 'left');
+  if(opts.showDiagonal){
+    s += arrow(0,0, opts.ab.x+opts.ad.x, opts.ab.y+opts.ad.y, 'var(--lime)', opts.diagLabel||'AC', 'right');
+  }
+  s += '<circle cx="'+X(0)+'" cy="'+Y(0)+'" r="3.2" fill="var(--text)"/>';
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:340px" role="img">'+s+'</svg>';
+}
+
 function rectangleSVG(opts){
   var cols=opts.cols||9, rows=opts.rows||7;
   var gp = gridBaseSVG({cols:cols,rows:rows,cell:32});
@@ -439,7 +485,7 @@ function buildDragSumSVG(s){
     '<polygon points="'+(X1-X0)+','+(Y1-Y0)+' '+(p1x-X0)+','+(p1y-Y0)+' '+(p2x-X0)+','+(p2y-Y0)+'" fill="var(--pink)"/>'+
     '<circle cx="0" cy="0" r="5.5" fill="var(--pink)" stroke="var(--surface)" stroke-width="2"/>'+
     '<text x="'+lx+'" y="'+(ly-12)+'" font-family="Unbounded" font-weight="700" font-size="13" fill="var(--pink)" text-anchor="middle">'+(m.label||'b')+'</text>'+
-    '<rect x="'+(Math.min(0,X1-X0)-16)+'" y="'+(Math.min(0,Y1-Y0)-16)+'" width="'+(Math.abs(X1-X0)+32)+'" height="'+(Math.abs(Y1-Y0)+32)+'" fill="transparent" pointer-events="all" style="cursor:grab;"/>';
+    '<rect id="dragHit" x="'+(Math.min(0,X1-X0)-22)+'" y="'+(Math.min(0,Y1-Y0)-22)+'" width="'+(Math.abs(X1-X0)+44)+'" height="'+(Math.abs(Y1-Y0)+44)+'" fill="transparent" pointer-events="all" style="cursor:grab;touch-action:none;"/>';
 
   svgInner += '<g id="dragMovable" transform="translate('+X0+','+Y0+')" style="touch-action:none;">'+movableInner+'</g>';
   svgInner += '<g id="sumLineGroup"></g>';
@@ -452,7 +498,7 @@ function buildDragSumSVG(s){
     deltaX: (m.x1-m.x0)*cell, deltaY:(m.y1-m.y0)*cell
   };
 
-  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:400px;overflow:visible;" id="dragSvg" role="img">'+svgInner+'</svg>';
+  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:400px;overflow:visible;touch-action:none;-webkit-user-select:none;user-select:none;" id="dragSvg" role="img">'+svgInner+'</svg>';
 }
 
 /* =========================================================
@@ -468,7 +514,14 @@ function practiceChoice(mod,topic,prompt,visual,options,correct,explain,hint){
   return {mod:mod,topic:topic,kind:'practice',type:'choice',prompt:prompt,visual:visual,options:options,correct:correct,explain:explain,hint:hint};
 }
 function practiceNumber(mod,topic,prompt,visual,unit,answer,explain,tolerance,hint){
-  return {mod:mod,topic:topic,kind:'practice',type:'number',prompt:prompt,visual:visual,unit:unit||'',answer:answer,explain:explain,tolerance:tolerance||0.02,hint:hint};
+  /* Defensive: if tolerance was accidentally passed as a non-numeric string (e.g. a hint
+     shifted into this slot because an earlier argument was omitted), treat it as the hint
+     instead of letting a broken tolerance silently reject every correct answer. */
+  if(typeof tolerance !== 'number' || isNaN(tolerance)){
+    if(hint===undefined) hint = tolerance;
+    tolerance = 0.02;
+  }
+  return {mod:mod,topic:topic,kind:'practice',type:'number',prompt:prompt,visual:visual,unit:unit||'',answer:answer,explain:explain,tolerance:tolerance,hint:hint};
 }
 function practiceMulti(mod,topic,prompt,visual,labels,correctLabels,explain,hint){
   return {mod:mod,topic:topic,kind:'practice',type:'multi',prompt:prompt,visual:visual,labels:labels,correctLabels:correctLabels,explain:explain,hint:hint};
@@ -597,6 +650,7 @@ STEPS.push(practiceChoice('vec','V2','Векторы a и b на рисунке 
 STEPS.push(practiceNumber('vec','V2','Даны a(4; −3) и b(−8; 6). Найдите коэффициент k, при котором b = k·a.',
   null, '', -2,
   '−8/4 = −2, и 6/(−3) = −2 — коэффициент одинаковый, значит k = −2 (векторы коллинеарны и противоположно направлены).',
+  0.02,
   'Раздели любую координату b на соответствующую координату a — это и есть k.'));
 
 /* ================= V3: Сложение векторов ================= */
@@ -665,7 +719,7 @@ STEPS.push(practiceDrag('vec','V3',
   'Приложив −b к концу a, мы построили разность a − b — то же самое, что сложение с противоположным вектором.',
   'Действуй так же, как при сложении: зацепи начало вектора −b и совмести его с концом вектора a.'));
 STEPS.push(practiceNumber('vec','V3','В параллелограмме ABCD известны векторы AB(3; 1) и AD(2; 4). Найдите x-координату диагонали AC = AB + AD.',
-  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:false}),
+  parallelogramAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},abLabel:'AB',adLabel:'AD',showDiagonal:false}),
   '', 5,
   'AC = AB + AD = (3+2; 1+4) = (5; 5). Ответ на x-координату: 5.',
   0.02,
@@ -726,6 +780,7 @@ STEPS.push(practiceChoice('vec','V4','Если a = k·b и известно, ч�
 STEPS.push(practiceNumber('vec','V4','Дан вектор a(3; 4), |a| = 5. Чему равна длина вектора −2a?',
   null, '', 10,
   '|−2a| = |−2|·|a| = 2·5 = 10. Знак минус на длину не влияет.',
+  0.02,
   'Длина умножается на модуль коэффициента: |k·a| = |k|·|a|.'));
 
 /* ================= V5: Смешанные задачи ================= */
@@ -761,7 +816,7 @@ STEPS.push(practiceChoice('vec','V5','Даны a(4; −3) и b(−8; 6). Кол�
   '−8/4 = −2 и 6/(−3) = −2 — коэффициенты совпадают, значит b = −2·a, то есть k = −2.',
   'Раздели любую координату b на соответствующую координату a.'));
 STEPS.push(practiceNumber('vec','V5','В параллелограмме ABCD известны AB(3;1) и AD(2;4) (как в предыдущей теме). Найдите длину диагонали AC.',
-  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:false}),
+  parallelogramAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},abLabel:'AB',adLabel:'AD',showDiagonal:false}),
   '', 7.07,
   'AC = AB + AD = (5; 5). Длина: |AC| = √(5²+5²) = √50 ≈ 7,07.', 0.05,
   'Сначала найди координаты диагонали как суммы AB и AD, потом примени формулу длины.'));
@@ -1110,10 +1165,11 @@ function wireStep(s){
   } else if(s.type==='drag'){
     var geom = s._drag;
     var group = document.getElementById('dragMovable');
+    var hit = document.getElementById('dragHit');
     var svgEl = document.getElementById('dragSvg');
     var dragging=false, startClientX=0, startClientY=0, startTx=0, startTy=0, curTx=0, curTy=0;
     var wrongCountD = 0, finishedD = false;
-    var tolPx = geom.cell*0.5;
+    var tolPx = geom.cell*0.55;
 
     function setTransform(tx,ty){
       group.setAttribute('transform','translate('+(geom.baseX+tx)+','+(geom.baseY+ty)+')');
@@ -1134,16 +1190,22 @@ function wireStep(s){
         '<text x="'+((X0+X1)/2+12)+'" y="'+((Y0+Y1)/2-6)+'" font-family="Unbounded" font-weight="700" font-size="13" fill="var(--lime)">'+(s.sumLabel||'a+b')+'</text>';
     }
 
-    group.addEventListener('pointerdown', function(e){
+    /* Pointer handlers are attached to the invisible hit rectangle itself (not the parent
+       group) and capture is set on that same element — this is the most reliable pattern
+       across mobile browsers and avoids intermittent "won't grab" issues caused by relying
+       on event bubbling through a transformed SVG <g>. */
+    hit.addEventListener('pointerdown', function(e){
       if(finishedD) return;
+      e.preventDefault();
       dragging = true;
-      try{ group.setPointerCapture(e.pointerId); }catch(err){}
+      try{ hit.setPointerCapture(e.pointerId); }catch(err){}
       startClientX = e.clientX; startClientY = e.clientY;
       startTx = curTx; startTy = curTy;
-      group.style.cursor = 'grabbing';
+      hit.style.cursor = 'grabbing';
     });
-    group.addEventListener('pointermove', function(e){
+    hit.addEventListener('pointermove', function(e){
       if(!dragging) return;
+      e.preventDefault();
       var scale = getScale();
       curTx = startTx + (e.clientX-startClientX)*scale;
       curTy = startTy + (e.clientY-startClientY)*scale;
@@ -1152,8 +1214,8 @@ function wireStep(s){
     function finishDrag(e){
       if(!dragging) return;
       dragging = false;
-      group.style.cursor = 'grab';
-      try{ group.releasePointerCapture(e.pointerId); }catch(err){}
+      hit.style.cursor = 'grab';
+      try{ hit.releasePointerCapture(e.pointerId); }catch(err){}
       var achievedX = geom.baseX+curTx, achievedY = geom.baseY+curTy;
       var dist = Math.hypot(achievedX-geom.targetX, achievedY-geom.targetY);
       var fb = document.getElementById('feedback');
@@ -1165,7 +1227,7 @@ function wireStep(s){
         fb.className = 'feedback show ok';
         fb.innerHTML = '<span class="ico">✓</span><span><b>Верно!</b> '+s.explain+'</span>';
         markDone(wrongCountD===0);
-        group.style.cursor = 'default';
+        hit.style.cursor = 'default';
       } else {
         wrongCountD++;
         if(wrongCountD>=5){
@@ -1176,7 +1238,7 @@ function wireStep(s){
           fb.className = 'feedback show bad';
           fb.innerHTML = '<span class="ico">i</span><span><b>Показываю верное положение.</b> '+s.explain+'</span>';
           markDone(false);
-          group.style.cursor = 'default';
+          hit.style.cursor = 'default';
         } else {
           curTx = 0; curTy = 0;
           setTransform(0,0);
@@ -1185,8 +1247,8 @@ function wireStep(s){
         }
       }
     }
-    group.addEventListener('pointerup', finishDrag);
-    group.addEventListener('pointercancel', finishDrag);
+    hit.addEventListener('pointerup', finishDrag);
+    hit.addEventListener('pointercancel', finishDrag);
   }
 }
 
