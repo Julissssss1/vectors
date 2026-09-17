@@ -109,7 +109,7 @@
   .tag.theory{color:var(--blue); border-color:rgba(79,125,255,0.35); background:var(--blue-soft);}
   .tag.worked{color:var(--lime); border-color:rgba(199,255,77,0.3); background:var(--lime-soft);}
   .tag.practice{color:var(--pink); border-color:rgba(255,79,154,0.32); background:var(--pink-soft);}
-  .tag.intro, .tag.final{color:var(--text-dim);}
+  .tag.final{color:var(--text-dim);}
   .kicker .topic-name{font-size:13px; color:var(--text-faint);}
 
   h2.step-title{font-size:22px; margin:0 0 14px; line-height:1.25;}
@@ -131,12 +131,6 @@
 
   .visual{margin:16px 0; display:flex; justify-content:center;}
   .visual svg{max-width:100%; height:auto;}
-  .formula-box{
-    background:var(--surface-2); border:1px solid var(--border-soft); border-radius:14px;
-    padding:16px 20px; display:flex; flex-direction:column; gap:9px; align-items:center;
-    width:100%; max-width:420px; margin:0 auto;
-  }
-  .formula-line{font-family:'JetBrains Mono'; font-size:15.5px; color:var(--lime); font-weight:600; letter-spacing:.01em; text-align:center;}
 
   /* ---------- Worked example ---------- */
   .worked-box{background:var(--surface-2); border:1px solid var(--border-soft); border-radius:14px; padding:16px 18px; margin-top:6px;}
@@ -157,7 +151,6 @@
 
   /* ---------- Practice ---------- */
   .practice-q{font-size:15px; line-height:1.6; color:var(--text); margin:0 0 14px;}
-  .practice-q .given{color:var(--text-dim); font-size:13.5px; display:block; margin-top:4px;}
   .choices{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px;}
   @media (max-width:480px){ .choices{grid-template-columns:1fr;} }
   .choice-btn{
@@ -205,6 +198,36 @@
   .feedback.bad .ico{background:var(--red); color:#210608;}
   .retry-note{font-size:13px; color:var(--text-faint); margin-top:2px; display:block;}
 
+  /* ---------- Help button / hint panel ---------- */
+  .help-row{margin:2px 0 12px;}
+  .help-btn{
+    font-family:'Manrope'; font-weight:700; font-size:13px; color:var(--blue);
+    background:var(--blue-soft); border:1px solid rgba(79,125,255,0.3); border-radius:10px;
+    padding:8px 14px; cursor:pointer;
+  }
+  .help-btn:hover{filter:brightness(1.1);}
+  .hint-panel{
+    display:none; margin:-2px 0 14px; padding:12px 14px; background:var(--surface-2);
+    border:1px solid var(--border-soft); border-radius:12px; font-size:13.5px; color:var(--text-dim); line-height:1.55;
+  }
+  .hint-panel.show{display:block;}
+
+  /* ---------- Multi-select (collinearity) ---------- */
+  .multi-wrap{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px;}
+  .multi-btn{
+    font-family:'JetBrains Mono'; font-weight:700; font-size:14px; color:var(--text);
+    background:var(--surface-2); border:1.5px solid var(--border); border-radius:10px;
+    padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .multi-btn .swatch{width:12px;height:12px;border-radius:3px;flex:none;}
+  .multi-btn.selected{border-color:var(--blue); background:var(--blue-soft);}
+  .multi-btn.correct{border-color:var(--lime); background:var(--lime-soft);}
+  .multi-btn.wrong{border-color:var(--red); background:var(--red-soft);}
+  .multi-btn.locked{pointer-events:none; opacity:.85;}
+
+  /* ---------- Drag caption ---------- */
+  .drag-caption{font-size:12.5px; color:var(--text-faint); margin-top:2px; text-align:center;}
+
   /* ---------- Footer nav ---------- */
   .stepnav{display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:12px;}
   .navbtn{
@@ -218,16 +241,7 @@
   .navbtn:disabled{opacity:.35; cursor:not-allowed; filter:none;}
   .navbtn.ghost{background:transparent; border-color:transparent; color:var(--text-faint); padding:12px 8px;}
 
-  /* ---------- Intro / final ---------- */
-  .hero-badges{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 4px;}
-  .hero-badge{
-    display:flex; align-items:center; gap:9px; background:var(--surface-2); border:1px solid var(--border-soft);
-    border-radius:12px; padding:10px 13px; font-size:13.5px; color:var(--text-dim); flex:1; min-width:190px;
-  }
-  .hero-badge .ic{width:26px;height:26px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'JetBrains Mono';font-weight:700;}
-  .hero-badge.b1 .ic{background:var(--blue-soft); color:var(--blue);}
-  .hero-badge.b2 .ic{background:var(--pink-soft); color:var(--pink);}
-
+  /* ---------- Final ---------- */
   .final-stats{display:flex; gap:12px; margin:18px 0; flex-wrap:wrap;}
   .final-stat{flex:1; min-width:130px; background:var(--surface-2); border:1px solid var(--border-soft); border-radius:14px; padding:16px;}
   .final-stat .v{font-family:'JetBrains Mono'; font-weight:700; font-size:26px; color:var(--lime);}
@@ -263,7 +277,6 @@
    SVG HELPERS
    ========================================================= */
 
-/* Grid with coordinate axes, used for vector diagrams */
 function gridBaseSVG(opts){
   var cols=opts.cols, rows=opts.rows, cell=opts.cell||34;
   var padL=opts.padL||26, padT=opts.padT||20, padB=opts.padB||26, padR=opts.padR||26;
@@ -280,8 +293,6 @@ function gridBaseSVG(opts){
   return {lines:lines, w:w, h:h, padL:padL, padT:padT, cell:cell};
 }
 
-/* Draw a single vector as an arrow from (x0,y0) to (x1,y1) in grid cell coords (col,row from top-left),
-   with an optional label near the tip. */
 function vecArrow(gp, x0,y0,x1,y1, color, label, labelSide){
   var cell=gp.cell, padL=gp.padL, padT=gp.padT;
   var X0=padL+x0*cell, Y0=padT+y0*cell, X1=padL+x1*cell, Y1=padT+y1*cell;
@@ -313,20 +324,37 @@ function gridLabel(gp,x,y,text,color,o){
   return '<text x="'+(padL+x*cell+(o.dx||0))+'" y="'+(padT+y*cell+(o.dy||-8))+'" font-family="Unbounded" font-weight="700" font-size="'+(o.size||13)+'" fill="'+color+'" text-anchor="'+(o.anchor||'middle')+'">'+text+'</text>';
 }
 
-/* One vector on a clean grid, from origin-ish point, with coordinate label option */
-function singleVectorSVG(opts){
-  var cols=opts.cols||8, rows=opts.rows||6;
-  var gp = gridBaseSVG({cols:cols,rows:rows,cell:34});
-  var s = gp.lines;
-  s += vecArrow(gp, opts.x0,opts.y0,opts.x1,opts.y1, 'var(--pink)', opts.label||'a', opts.labelSide||'above');
-  if(opts.showPoints){
-    s += gridDot(gp,opts.x0,opts.y0,'var(--blue)');
-    s += gridDot(gp,opts.x1,opts.y1,'var(--blue)');
+/* Grid with numbered coordinate axes — used in V1 so coordinates can be read directly */
+function axisVectorSVG(opts){
+  var cell=34, padL=32,padT=18,padB=30,padR=20;
+  var cols=opts.cols, rows=opts.rows;
+  function X(cx){ return padL+cx*cell; }
+  function Y(cy){ return padT+(rows-cy)*cell; }
+  var w=padL+cols*cell+padR, h=padT+rows*cell+padB;
+  var s='';
+  for(var c=0;c<=cols;c++) s+='<line x1="'+X(c)+'" y1="'+padT+'" x2="'+X(c)+'" y2="'+(padT+rows*cell)+'" stroke="var(--grid-line)" stroke-width="1"/>';
+  for(var r=0;r<=rows;r++) s+='<line x1="'+padL+'" y1="'+Y(r)+'" x2="'+(padL+cols*cell)+'" y2="'+Y(r)+'" stroke="var(--grid-line)" stroke-width="1"/>';
+  s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(padL+cols*cell)+'" y2="'+Y(0)+'" stroke="var(--text-dim)" stroke-width="2"/>';
+  s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(padT+rows*cell)+'" stroke="var(--text-dim)" stroke-width="2"/>';
+  for(var c=0;c<=cols;c++){
+    s+='<text x="'+X(c)+'" y="'+(Y(0)+16)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="middle">'+c+'</text>';
   }
-  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:320px" role="img">'+s+'</svg>';
+  for(var r=1;r<=rows;r++){
+    s+='<text x="'+(X(0)-8)+'" y="'+(Y(r)+4)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">'+r+'</text>';
+  }
+  s+='<text x="'+(X(0)-8)+'" y="'+(Y(0)+16)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">0</text>';
+  var X0=X(opts.x0), Y0=Y(opts.y0), X1=X(opts.x1), Y1=Y(opts.y1);
+  var dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
+  var ah=10, aw=6.5, bx=X1-ux*ah, by=Y1-uy*ah, px=-uy,py=ux;
+  var p1x=bx+px*aw/2,p1y=by+py*aw/2,p2x=bx-px*aw/2,p2y=by-py*aw/2;
+  s+='<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/>';
+  s+='<polygon points="'+X1+','+Y1+' '+p1x+','+p1y+' '+p2x+','+p2y+'" fill="var(--pink)"/>';
+  s+='<circle cx="'+X0+'" cy="'+Y0+'" r="3.2" fill="var(--blue)"/><circle cx="'+X1+'" cy="'+Y1+'" r="3.2" fill="var(--blue)"/>';
+  var mx=(X0+X1)/2,my=(Y0+Y1)/2;
+  s+='<text x="'+mx+'" y="'+(my-12)+'" font-family="Unbounded" font-weight="700" font-size="13" fill="var(--pink)" text-anchor="middle">'+(opts.label||'a')+'</text>';
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:320px" role="img">'+s+'</svg>';
 }
 
-/* Two (or more) vectors from the same or different anchor points, for collinearity comparisons */
 function multiVectorSVG(opts){
   var cols=opts.cols||9, rows=opts.rows||7;
   var gp = gridBaseSVG({cols:cols,rows:rows,cell:32});
@@ -335,32 +363,17 @@ function multiVectorSVG(opts){
   opts.vectors.forEach(function(v,i){
     s += vecArrow(gp, v.x0,v.y0,v.x1,v.y1, v.color||colors[i%colors.length], v.label, v.labelSide||'above');
   });
-  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:360px" role="img">'+s+'</svg>';
+  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:380px" role="img">'+s+'</svg>';
 }
 
-/* Vector addition by triangle rule: a from A to B, b from B to C, sum from A to C (dashed) */
-function triangleRuleSVG(opts){
-  var cols=opts.cols||9, rows=opts.rows||7;
-  var gp = gridBaseSVG({cols:cols,rows:rows,cell:32});
+function singleVectorSVG(opts){
+  var cols=opts.cols||8, rows=opts.rows||6;
+  var gp = gridBaseSVG({cols:cols,rows:rows,cell:34});
   var s = gp.lines;
-  var A=[opts.Ax,opts.Ay], B=[opts.Bx,opts.By], C=[opts.Cx,opts.Cy];
-  s += vecArrow(gp, A[0],A[1], B[0],B[1], 'var(--blue)', opts.aLabel||'a', 'above');
-  s += vecArrow(gp, B[0],B[1], C[0],C[1], 'var(--pink)', opts.bLabel||'b', 'right');
-  var cell=gp.cell, padL=gp.padL, padT=gp.padT;
-  var X0=padL+A[0]*cell, Y0=padT+A[1]*cell, X1=padL+C[0]*cell, Y1=padT+C[1]*cell;
-  var dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
-  var ah=10, aw=6.5, bx=X1-ux*ah, by=Y1-uy*ah, px=-uy, py=ux;
-  var p1x=bx+px*aw/2, p1y=by+py*aw/2, p2x=bx-px*aw/2, p2y=by-py*aw/2;
-  s += '<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="var(--lime)" stroke-width="2.6" stroke-dasharray="7 5" stroke-linecap="round"/>';
-  s += '<polygon points="'+X1+','+Y1+' '+p1x+','+p1y+' '+p2x+','+p2y+'" fill="var(--lime)"/>';
-  s += gridLabel(gp, (A[0]+C[0])/2+0.35, (A[1]+C[1])/2-0.25, opts.sumLabel||'a+b', 'var(--lime)');
-  s += gridDot(gp,A[0],A[1],'var(--text)') + gridLabel(gp,A[0],A[1],'A','var(--text)',{dy:-8});
-  s += gridDot(gp,B[0],B[1],'var(--text)') + gridLabel(gp,B[0],B[1],'B','var(--text)',{dy:-8});
-  s += gridDot(gp,C[0],C[1],'var(--text)') + gridLabel(gp,C[0],C[1],'C','var(--text)',{dy:-8});
-  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:340px" role="img">'+s+'</svg>';
+  s += vecArrow(gp, opts.x0,opts.y0,opts.x1,opts.y1, 'var(--pink)', opts.label||'a', opts.labelSide||'above');
+  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:320px" role="img">'+s+'</svg>';
 }
 
-/* Parallelogram ABCD with side vectors and one diagonal, for parallelogram-rule questions */
 function parallelogramSVG(opts){
   var cols=opts.cols||9, rows=opts.rows||7;
   var gp = gridBaseSVG({cols:cols,rows:rows,cell:32});
@@ -382,7 +395,6 @@ function parallelogramSVG(opts){
   return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:360px" role="img">'+s+'</svg>';
 }
 
-/* Rectangle ABCD, used for the diagonal-as-sum-of-sides task */
 function rectangleSVG(opts){
   var cols=opts.cols||9, rows=opts.rows||7;
   var gp = gridBaseSVG({cols:cols,rows:rows,cell:32});
@@ -401,16 +413,46 @@ function rectangleSVG(opts){
   return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:340px" role="img">'+s+'</svg>';
 }
 
-/* Grid with an unlabeled vector for "read coordinates from the picture" warm-up task */
-function readCoordsSVG(opts){
-  var cols=opts.cols||8, rows=opts.rows||6;
-  var gp = gridBaseSVG({cols:cols,rows:rows,cell:36});
-  var s = gp.lines;
-  s += vecArrow(gp, opts.x0,opts.y0,opts.x1,opts.y1, 'var(--pink)', opts.label||'a', 'above');
-  s += gridDot(gp,opts.x0,opts.y0,'var(--blue)');
-  s += gridDot(gp,opts.x1,opts.y1,'var(--blue)');
-  s += gridLabel(gp,opts.x0,opts.y0,'('+opts.x0+';'+(rows-opts.y0)+')','var(--text-faint)',{dy:18,size:11});
-  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:320px" role="img">'+s+'</svg>';
+/* Build the drag-and-drop vector-sum SVG. Also stashes pixel geometry on step object (s._drag)
+   so wireStep() can reuse it without recomputation. */
+function buildDragSumSVG(s){
+  var cols=s.cols, rows=s.rows, cell=s.cell||32;
+  var gp = gridBaseSVG({cols:cols,rows:rows,cell:cell,padL:30,padT:24,padB:30,padR:26});
+  var svgInner = gp.lines;
+
+  // fixed vector a
+  svgInner += vecArrow(gp, s.a.x0,s.a.y0,s.a.x1,s.a.y1, 'var(--blue)', s.a.label||'a','above');
+  svgInner += gridDot(gp,s.a.x0,s.a.y0,'var(--text)');
+
+  var targetX = gp.padL+s.a.x1*cell, targetY = gp.padT+s.a.y1*cell;
+  // drop-zone hint circle at target
+  svgInner += '<circle cx="'+targetX+'" cy="'+targetY+'" r="10" fill="none" stroke="var(--lime)" stroke-width="2" stroke-dasharray="3 3"/>';
+
+  var m = s.movable;
+  var X0=gp.padL+m.x0*cell, Y0=gp.padT+m.y0*cell, X1=gp.padL+m.x1*cell, Y1=gp.padT+m.y1*cell;
+  var dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
+  var ah=10, aw=7, bxA=X1-ux*ah, byA=Y1-uy*ah, px=-uy, py=ux;
+  var p1x=bxA+px*aw/2, p1y=byA+py*aw/2, p2x=bxA-px*aw/2, p2y=byA-py*aw/2;
+  var lx=(X1-X0)/2, ly=(Y1-Y0)/2;
+  var movableInner =
+    '<line x1="0" y1="0" x2="'+(bxA-X0)+'" y2="'+(byA-Y0)+'" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/>'+
+    '<polygon points="'+(X1-X0)+','+(Y1-Y0)+' '+(p1x-X0)+','+(p1y-Y0)+' '+(p2x-X0)+','+(p2y-Y0)+'" fill="var(--pink)"/>'+
+    '<circle cx="0" cy="0" r="5.5" fill="var(--pink)" stroke="var(--surface)" stroke-width="2"/>'+
+    '<text x="'+lx+'" y="'+(ly-12)+'" font-family="Unbounded" font-weight="700" font-size="13" fill="var(--pink)" text-anchor="middle">'+(m.label||'b')+'</text>'+
+    '<rect x="'+(Math.min(0,X1-X0)-16)+'" y="'+(Math.min(0,Y1-Y0)-16)+'" width="'+(Math.abs(X1-X0)+32)+'" height="'+(Math.abs(Y1-Y0)+32)+'" fill="transparent" pointer-events="all" style="cursor:grab;"/>';
+
+  svgInner += '<g id="dragMovable" transform="translate('+X0+','+Y0+')" style="touch-action:none;">'+movableInner+'</g>';
+  svgInner += '<g id="sumLineGroup"></g>';
+
+  s._drag = {
+    padL:gp.padL, padT:gp.padT, cell:cell,
+    baseX:X0, baseY:Y0,
+    targetX:targetX, targetY:targetY,
+    aStartX: gp.padL+s.a.x0*cell, aStartY: gp.padT+s.a.y0*cell,
+    deltaX: (m.x1-m.x0)*cell, deltaY:(m.y1-m.y0)*cell
+  };
+
+  return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:400px;overflow:visible;" id="dragSvg" role="img">'+svgInner+'</svg>';
 }
 
 /* =========================================================
@@ -422,18 +464,31 @@ function theory(mod,topic,title,lead,rules,visualHtml){
 function worked(mod,topic,title,examples){
   return {mod:mod,topic:topic,kind:'worked',title:title,examples:examples};
 }
-function practiceChoice(mod,topic,prompt,visual,options,correct,explain){
-  return {mod:mod,topic:topic,kind:'practice',type:'choice',prompt:prompt,visual:visual,options:options,correct:correct,explain:explain};
+function practiceChoice(mod,topic,prompt,visual,options,correct,explain,hint){
+  return {mod:mod,topic:topic,kind:'practice',type:'choice',prompt:prompt,visual:visual,options:options,correct:correct,explain:explain,hint:hint};
 }
-function practiceNumber(mod,topic,prompt,visual,unit,answer,explain,tolerance){
-  return {mod:mod,topic:topic,kind:'practice',type:'number',prompt:prompt,visual:visual,unit:unit||'',answer:answer,explain:explain,tolerance:tolerance||0.02};
+function practiceNumber(mod,topic,prompt,visual,unit,answer,explain,tolerance,hint){
+  return {mod:mod,topic:topic,kind:'practice',type:'number',prompt:prompt,visual:visual,unit:unit||'',answer:answer,explain:explain,tolerance:tolerance||0.02,hint:hint};
+}
+function practiceMulti(mod,topic,prompt,visual,labels,correctLabels,explain,hint){
+  return {mod:mod,topic:topic,kind:'practice',type:'multi',prompt:prompt,visual:visual,labels:labels,correctLabels:correctLabels,explain:explain,hint:hint};
+}
+function practiceDrag(mod,topic,prompt,cols,rows,a,movable,sumLabel,explain,hint){
+  return {mod:mod,topic:topic,kind:'practice',type:'drag',prompt:prompt,cols:cols,rows:rows,a:a,movable:movable,sumLabel:sumLabel,explain:explain,hint:hint};
 }
 function topicHeader(mod,topic,title,blurb){
   return {mod:mod,topic:topic,kind:'topicHeader',title:title,blurb:blurb};
 }
 
+var TOPIC_HINTS = {
+  V1: 'Используй формулу длины вектора: |a| = √(x² + y²). Если вектор задан двумя точками, сначала вычти координаты начала из координат конца (x_конца − x_начала; y_конца − y_начала).',
+  V2: 'Проверь, пропорциональны ли координаты векторов: x₁/x₂ должно быть равно y₁/y₂. Если коэффициент положительный — векторы сонаправлены, если отрицательный — противоположно направлены.',
+  V3: 'Координатно: сложи отдельно x-координаты и отдельно y-координаты. На картинке — приложи начало второго вектора к концу первого, сумма идёт от начала первого до конца второго.',
+  V4: 'Чтобы умножить вектор на число k, умножь обе координаты на k. Если k > 0 — направление сохраняется, если k < 0 — меняется на противоположное. Длина умножается на |k|.',
+  V5: 'Разбей задачу на шаги: сначала выполни умножение или сложение отдельно, получи координаты результата, и только потом применяй нужную формулу — длину или проверку коллинеарности.'
+};
+
 var STEPS = [];
-STEPS.push({kind:'intro'});
 
 /* ================= V1: Длина вектора ================= */
 STEPS.push(topicHeader('vec','V1','Длина вектора','Считаем длину вектора по координатам через теорему Пифагора'));
@@ -442,7 +497,7 @@ STEPS.push(theory('vec','V1','Формула длины вектора',
   [
     {n:1, html:'Если вектор a имеет координаты (x; y), его длина: |a| = √(x² + y²).'},
     {n:2, html:'Если вектор задан двумя точками A и B, сначала найди его координаты: AB = (x<sub>B</sub> − x<sub>A</sub>; y<sub>B</sub> − y<sub>A</sub>), а потом применяй формулу длины.'},
-    {n:3, html:'Знак координаты на длину не влияет — в формуле координаты возводятся в квадрat, поэтому минус «исчезает».'}
+    {n:3, html:'Знак координаты на длину не влияет — в формуле координаты возводятся в квадрат, поэтому минус «исчезает».'}
   ], null));
 STEPS.push(worked('vec','V1','Разбор примеров', [
   {
@@ -469,10 +524,11 @@ STEPS.push(practiceNumber('vec','V1','Даны точки A(1; 1) и B(4; 5). Н
   null, '', 5,
   'AB = (4−1; 5−1) = (3; 4). |AB| = √(3²+4²) = √25 = 5.'));
 STEPS.push(practiceChoice('vec','V1',
-  'На рисунке изображён вектор a на клетчатой сетке (одна клетка = 1). Определите его координаты.',
-  readCoordsSVG({cols:8,rows:6,x0:1,y0:5,x1:4,y1:1,label:'a'}),
-  ['a(3; 4)','a(4; 3)','a(3; −4)','a(−3; 4)'],0,
-  'Вектор начинается в точке (1;5) и заканчивается в (4;1). По x: 4−1=3, по y (считая снизу вверх): 5−1=4. Значит a(3; 4).'));
+  'На рисунке изображён вектор a на координатной сетке. Определите его координаты, считая клетки по осям.',
+  axisVectorSVG({cols:8,rows:6,x0:1,y0:1,x1:4,y1:5,label:'a'}),
+  ['a(4; 3)','a(3; −4)','a(3; 4)','a(−3; 4)'],2,
+  'Вектор начинается в точке (1;1) и заканчивается в (4;5). По x: 4−1=3, по y: 5−1=4. Значит a(3; 4).',
+  'Посмотри, на сколько клеток сдвинулся конец вектора вправо (это x) и на сколько вверх (это y) относительно начала.'));
 
 /* ================= V2: Коллинеарные, сонаправленные, противоположные ================= */
 STEPS.push(topicHeader('vec','V2','Коллинеарные векторы','Проверяем, лежат ли векторы на одной прямой или на параллельных прямых'));
@@ -481,13 +537,13 @@ STEPS.push(theory('vec','V2','Коллинеарность и направлен
   [
     {n:1, html:'Векторы a(x₁; y₁) и b(x₂; y₂) коллинеарны, если x₁·y₂ − x₂·y₁ = 0 (это то же самое, что x₁/x₂ = y₁/y₂, если координаты не равны нулю).'},
     {n:2, html:'Коллинеарные векторы бывают <b>сонаправленными</b> (↑↑, смотрят в одну сторону) или <b>противоположно направленными</b> (↑↓, смотрят в разные стороны).'},
-    {n:3, html:'Чтобы узнать направление, сравни знаки коэффициента k, при котором b = k·a: если k &gt; 0 — сонаправлены, если k &lt; 0 — противоположны.'},
+    {n:3, html:'Чтобы узнать направление, сравни знак коэффициента k, при котором b = k·a: если k &gt; 0 — сонаправлены, если k &lt; 0 — противоположны.'},
     {n:4, html:'Длина векторов на коллинеарность не влияет — сонаправленными или противоположными могут быть векторы разной длины.'}
   ], null));
 STEPS.push(worked('vec','V2','Разбор примеров', [
   {
     q:'Коллинеарны ли векторы a(2; 4) и b(1; 2)? Если да, определите направление.',
-    steps:['Проверяем пропорциональность: 2/1 = 2 и 4/2 = 2 — коэффициенты равны, значит векторы коллинеарны.', 'Коэффициент k = 2 &gt; 0, значит b = 2·... нет, наоборот: a = 2·b, и k &gt; 0.', 'Так как k положительный, векторы сонаправлены.'],
+    steps:['Проверяем пропорциональность: 2/1 = 2 и 4/2 = 2 — коэффициенты равны, значит векторы коллинеарны.', 'a = 2·b, коэффициент k = 2 &gt; 0.', 'Так как k положительный, векторы сонаправлены.'],
     answer:'Ответ: коллинеарны, сонаправлены'
   },
   {
@@ -498,35 +554,55 @@ STEPS.push(worked('vec','V2','Разбор примеров', [
 ]));
 STEPS.push(practiceChoice('vec','V2','Коллинеарны ли векторы a(4; 6) и b(6; 9)?',
   null,
-  ['Да, сонаправлены','Да, противоположно направлены','Нет, не коллинеарны','Недостаточно данных'],0,
-  '4/6 = 2/3 и 6/9 = 2/3 — координаты пропорциональны с положительным коэффициентом, значит векторы коллинеарны и сонаправлены.'));
+  ['Да, противоположно направлены','Да, сонаправлены','Нет, не коллинеарны','Недостаточно данных'],1,
+  '4/6 = 2/3 и 6/9 = 2/3 — координаты пропорциональны с положительным коэффициентом, значит векторы коллинеарны и сонаправлены.',
+  'Раздели соответствующие координаты друг на друга: x₁/x₂ и y₁/y₂. Если получились равные числа — векторы коллинеарны.'));
 STEPS.push(practiceChoice('vec','V2','Коллинеарны ли векторы a(2; 3) и b(4; 7)?',
   null,
   ['Да, сонаправлены','Да, противоположно направлены','Нет, не коллинеарны','Векторы равны'],2,
-  '2/4 = 0,5, а 3/7 ≈ 0,43 — коэффициенты разные, пропорция не выполняется, значит векторы не коллинеарны.'));
-STEPS.push(practiceChoice('vec','V2','На рисунке изображены три вектора. Какая пара коллинеарна?',
-  multiVectorSVG({cols:9,rows:7,vectors:[
-    {x0:1,y0:6,x1:3,y1:2,color:'var(--pink)',label:'a',labelSide:'left'},
-    {x0:4,y0:6,x1:6,y1:2,color:'var(--blue)',label:'b',labelSide:'right'},
-    {x0:6,y0:1,x1:8,y1:5,color:'var(--lime)',label:'c',labelSide:'right'}
+  '2/4 = 0,5, а 3/7 ≈ 0,43 — коэффициенты разные, пропорция не выполняется, значит векторы не коллинеарны.',
+  'Сравни отношения x₁/x₂ и y₁/y₂ — если они не равны, коллинеарности нет.'));
+STEPS.push(practiceMulti('vec','V2',
+  'На рисунке вектор a и ещё четыре вектора. Выбери все векторы, коллинеарные вектору a (можно выбрать несколько), затем нажми «Проверить».',
+  multiVectorSVG({cols:10,rows:8,vectors:[
+    {x0:1,y0:7,x1:3,y1:3,color:'var(--text)',label:'a',labelSide:'left'},
+    {x0:5,y0:7,x1:6,y1:5,color:'var(--pink)',label:'b',labelSide:'right'},
+    {x0:8,y0:2,x1:7,y1:4,color:'var(--blue)',label:'c',labelSide:'right'},
+    {x0:4,y0:7,x1:7,y1:5,color:'var(--lime)',label:'d',labelSide:'below'},
+    {x0:2,y0:1,x1:4,y1:4,color:'#ffb347',label:'e',labelSide:'right'}
   ]}),
-  ['a и b','a и c','b и c','Ни одна пара'],0,
-  'Векторы a и b имеют одинаковое направление смещения (2 клетки вправо, 4 вверх) — они коллинеарны и сонаправлены. Вектор c направлен иначе.'));
+  ['b','c','d','e'], ['b','c'],
+  'Вектор b (1;−2) и вектор c (−1;2) имеют координаты, пропорциональные вектору a (2;−4) — они лежат на параллельных прямых. Векторы d (3;−2) и e (2;3) имеют другое отношение координат, значит не коллинеарны a.',
+  'Сравни, во сколько раз и в какую сторону нужно растянуть каждый вектор, чтобы он совпал по направлению с a (или с направлением, противоположным a).'));
+STEPS.push(practiceMulti('vec','V2',
+  'Ещё один рисунок: вектор a и четыре кандидата. Отметь все векторы, коллинеарные a.',
+  multiVectorSVG({cols:10,rows:8,vectors:[
+    {x0:1,y0:7,x1:4,y1:6,color:'var(--text)',label:'a',labelSide:'below'},
+    {x0:2,y0:7,x1:8,y1:5,color:'var(--pink)',label:'b',labelSide:'above'},
+    {x0:9,y0:2,x1:6,y1:3,color:'var(--blue)',label:'c',labelSide:'right'},
+    {x0:3,y0:1,x1:6,y1:3,color:'var(--lime)',label:'d',labelSide:'above'},
+    {x0:9,y0:7,x1:7,y1:4,color:'#ffb347',label:'e',labelSide:'left'}
+  ]}),
+  ['b','c','d','e'], ['b','c'],
+  'Вектор b (6;−2) и вектор c (−3;1) пропорциональны вектору a (3;−1) — коллинеарны (b сонаправлен, c противоположно направлен). Векторы d (3;2) и e (−2;−3) — другое отношение координат, не коллинеарны.',
+  'Раздели координаты каждого кандидата на соответствующие координаты вектора a — у коллинеарных векторов получится одно и то же число.'));
 STEPS.push(practiceChoice('vec','V2','Векторы a и b на рисунке смотрят в одну сторону, но имеют разную длину. Верно ли, что они сонаправлены?',
   multiVectorSVG({cols:8,rows:6,vectors:[
     {x0:1,y0:5,x1:3,y1:1,color:'var(--pink)',label:'a',labelSide:'left'},
     {x0:5,y0:5,x1:6,y1:3,color:'var(--blue)',label:'b',labelSide:'right'}
   ]}),
-  ['Да, направление не зависит от длины','Нет, длины должны быть равны','Нет, это разные векторы, сравнивать нельзя','Да, но только если начала совпадают'],0,
-  'Сонаправленность определяется только направлением, а не длиной. Даже если векторы разной длины, они могут быть сонаправлены — как в этом примере.'));
+  ['Нет, длины должны быть равны','Нет, это разные векторы, сравнивать нельзя','Да, но только если начала совпадают','Да, направление не зависит от длины'],3,
+  'Сонаправленность определяется только направлением, а не длиной. Даже если векторы разной длины, они могут быть сонаправлены — как в этом примере.',
+  'Направление и длина — независимые характеристики вектора. Смотри только на то, куда «смотрит» стрелка.'));
 STEPS.push(practiceNumber('vec','V2','Даны a(4; −3) и b(−8; 6). Найдите коэффициент k, при котором b = k·a.',
   null, '', -2,
-  '−8/4 = −2, и 6/(−3) = −2 — коэффициент одинаковый, значит k = −2 (векторы коллинеарны и противоположно направлены).'));
+  '−8/4 = −2, и 6/(−3) = −2 — коэффициент одинаковый, значит k = −2 (векторы коллинеарны и противоположно направлены).',
+  'Раздели любую координату b на соответствующую координату a — это и есть k.'));
 
 /* ================= V3: Сложение векторов ================= */
 STEPS.push(topicHeader('vec','V3','Сложение векторов','Складываем векторы координатно и по правилам треугольника и параллелограмма'));
 STEPS.push(theory('vec','V3','Как складывать векторы',
-  'Сложить векторы можно двумя способами: через координаты (просто сложив числа) или geометрически — по правилу треугольника или параллелограмма.',
+  'Сложить векторы можно двумя способами: через координаты (просто сложив числа) или геометрически — по правилу треугольника или параллелограмма.',
   [
     {n:1, html:'Координатно: если a(x₁; y₁) и b(x₂; y₂), то a + b = (x₁+x₂; y₁+y₂) — складываются отдельно x и отдельно y.'},
     {n:2, html:'Правило треугольника: откладываем вектор a, затем от его конца — вектор b. Сумма a + b — это вектор от начала a до конца b.'},
@@ -541,30 +617,64 @@ STEPS.push(worked('vec','V3','Разбор примеров', [
   },
   {
     q:'В прямоугольнике ABCD известны векторы сторон AB(4; 0) и BC(0; 3). Найдите координаты диагонали AC и её длину.',
+    visual: rectangleSVG({cols:8,rows:6,Ax:1,Ay:1,w:4,h:3,abLabel:'AB',bcLabel:'BC',diagLabel:'AC'}),
     steps:['Диагональ AC — это сумма векторов сторон: AC = AB + BC = (4+0; 0+3) = (4; 3).', 'Длина: |AC| = √(4² + 3²) = √(16+9) = √25.', 'Извлекаем корень: |AC| = 5.'],
     answer:'Ответ: AC(4; 3), |AC| = 5'
   }
 ]));
 STEPS.push(practiceChoice('vec','V3','Даны a(2; 3) и b(1; −1). Найдите a + b.',
   null,
-  ['(3; 2)','(1; 4)','(3; −4)','(−1; 4)'],0,
-  'a + b = (2+1; 3+(−1)) = (3; 2).'));
+  ['(1; 4)','(3; 2)','(3; −4)','(−1; 4)'],1,
+  'a + b = (2+1; 3+(−1)) = (3; 2).',
+  'Сложи отдельно x-координаты и отдельно y-координаты.'));
 STEPS.push(practiceChoice('vec','V3','Даны a(−3; 5) и b(4; −2). Найдите a + b.',
   null,
-  ['(1; 3)','(−7; 7)','(7; 3)','(1; 7)'],0,
-  'a + b = (−3+4; 5+(−2)) = (1; 3).'));
-STEPS.push(practiceChoice('vec','V3','На рисунке показаны векторы a (от A до B) и b (от B до C) — правило треугольника. Чему равен вектор a + b?',
-  triangleRuleSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:2,Cx:7,Cy:5,aLabel:'a',bLabel:'b',sumLabel:'a+b'}),
-  ['Вектору AC','Вектору AB','Вектору BC','Вектору CA'],0,
-  'По правилу треугольника сумма a + b — это вектор, соединяющий начало первого вектора (A) с концом второго (C), то есть вектор AC.'));
+  ['(−7; 7)','(7; 3)','(1; 3)','(1; 7)'],2,
+  'a + b = (−3+4; 5+(−2)) = (1; 3).',
+  'Сложи отдельно x-координаты и отдельно y-координаты, аккуратно со знаками.'));
+STEPS.push(practiceDrag('vec','V3',
+  'Даны векторы a и b. Перетащи вектор b так, чтобы его начало (кружок) совпало с концом вектора a — попади в пунктирную зону. Так получится сумма a + b по правилу треугольника.',
+  11,9,
+  {x0:1,y0:7,x1:4,y1:6,label:'a'},
+  {x0:7,y0:7,x1:9,y1:4,label:'b'},
+  'a+b',
+  'Сумма a + b — это вектор, ведущий из начала a в конец приложенного к нему вектора b. Именно так ты и построила сумму.',
+  'Зацепи вектор b за кружок на его начале и подвинь так, чтобы этот кружок точно встал на конец (стрелку) вектора a.'));
+STEPS.push(practiceDrag('vec','V3',
+  'Ещё одна пара векторов. Перетащи вектор b так, чтобы его начало совпало с концом вектора a.',
+  11,9,
+  {x0:1,y0:7,x1:2,y1:3,label:'a'},
+  {x0:6,y0:7,x1:10,y1:6,label:'b'},
+  'a+b',
+  'Сумма a + b получается, если приложить начало b к концу a — результат идёт от начала a до конца b.',
+  'Зацепи вектор b за кружок на его начале и подвинь так, чтобы этот кружок точно встал на конец вектора a.'));
+STEPS.push(practiceDrag('vec','V3',
+  'Даны векторы a и b. Так как a − b = a + (−b), вектор −b (такой же длины, но в обратную сторону) уже показан на рисунке. Перетащи −b так, чтобы его начало совпало с концом вектора a — так получится разность a − b.',
+  11,9,
+  {x0:1,y0:7,x1:5,y1:6,label:'a'},
+  {x0:8,y0:7,x1:6,y1:3,label:'−b'},
+  'a−b',
+  'Так как a − b = a + (−b), мы взяли вектор, противоположный b, и приложили его к концу вектора a — получили разность a − b.',
+  'Действуй так же, как при сложении: зацепи начало вектора −b и совмести его с концом вектора a.'));
+STEPS.push(practiceDrag('vec','V3',
+  'Ещё одна разность. Перетащи вектор −b так, чтобы его начало совпало с концом вектора a.',
+  11,9,
+  {x0:1,y0:7,x1:3,y1:4,label:'a'},
+  {x0:8,y0:6,x1:5,y1:4,label:'−b'},
+  'a−b',
+  'Приложив −b к концу a, мы построили разность a − b — то же самое, что сложение с противоположным вектором.',
+  'Действуй так же, как при сложении: зацепи начало вектора −b и совмести его с концом вектора a.'));
 STEPS.push(practiceNumber('vec','V3','В параллелограмме ABCD известны векторы AB(3; 1) и AD(2; 4). Найдите x-координату диагонали AC = AB + AD.',
-  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:true,diagLabel:'AC'}),
+  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:false}),
   '', 5,
-  'AC = AB + AD = (3+2; 1+4) = (5; 5). Ответ на x-координату: 5.'));
+  'AC = AB + AD = (3+2; 1+4) = (5; 5). Ответ на x-координату: 5.',
+  0.02,
+  'Диагональ AC равна сумме векторов сторон AB и AD — сложи их координаты по отдельности.'));
 STEPS.push(practiceChoice('vec','V3','Даны три вектора: a(1; 2), b(3; −1), c(−2; 4). Найдите a + b + c.',
   null,
-  ['(2; 5)','(6; 3)','(0; 5)','(6; 5)'],0,
-  'Складываем x: 1+3+(−2)=2. Складываем y: 2+(−1)+4=5. Итого (2; 5).'));
+  ['(6; 3)','(0; 5)','(6; 5)','(2; 5)'],3,
+  'Складываем x: 1+3+(−2)=2. Складываем y: 2+(−1)+4=5. Итого (2; 5).',
+  'Складывай координаты по очереди: сначала x всех трёх векторов, потом y.'));
 
 /* ================= V4: Умножение вектора на число ================= */
 STEPS.push(topicHeader('vec','V4','Умножение вектора на число','Как число k меняет длину и направление вектора'));
@@ -590,27 +700,33 @@ STEPS.push(worked('vec','V4','Разбор примеров', [
 ]));
 STEPS.push(practiceChoice('vec','V4','Дан вектор a(2; 3). Найдите 3a.',
   null,
-  ['(6; 9)','(5; 6)','(6; 3)','(2; 9)'],0,
-  '3a = (3·2; 3·3) = (6; 9).'));
+  ['(5; 6)','(6; 9)','(6; 3)','(2; 9)'],1,
+  '3a = (3·2; 3·3) = (6; 9).',
+  'Умножь каждую координату на 3.'));
 STEPS.push(practiceChoice('vec','V4','Дан вектор a(−4; 6). Найдите 0,5a.',
   null,
-  ['(−2; 3)','(−4; 3)','(−8; 12)','(−4,5; 6,5)'],0,
-  '0,5a = (0,5·(−4); 0,5·6) = (−2; 3).'));
+  ['(−4; 3)','(−8; 12)','(−2; 3)','(−4,5; 6,5)'],2,
+  '0,5a = (0,5·(−4); 0,5·6) = (−2; 3).',
+  'Умножь каждую координату на 0,5 — это то же самое, что разделить на 2.'));
 STEPS.push(practiceChoice('vec','V4','Дан вектор a(1; −2). Найдите −2a.',
   null,
-  ['(−2; 4)','(2; −4)','(−2; −4)','(2; 4)'],0,
-  '−2a = (−2·1; −2·(−2)) = (−2; 4).'));
+  ['(2; −4)','(−2; 4)','(−2; −4)','(2; 4)'],1,
+  '−2a = (−2·1; −2·(−2)) = (−2; 4).',
+  'Умножь каждую координату на −2, следи за знаками.'));
 STEPS.push(practiceChoice('vec','V4','На рисунке изображён вектор a. Какой из вариантов показывает вектор 2a?',
   singleVectorSVG({cols:8,rows:6,x0:2,y0:5,x1:4,y1:3,label:'a'}),
-  ['Вектор в том же направлении, вдвое длиннее','Вектор в противоположном направлении, вдвое длиннее','Вектор в том же направлении, вдвое короче','Вектор перпендикулярно исходному'],0,
-  'При умножении на положительное число k=2 направление сохраняется, а длина увеличивается в 2 раза.'));
+  ['Вектор в противоположном направлении, вдвое длиннее','Вектор в том же направлении, вдвое короче','Вектор в том же направлении, вдвое длиннее','Вектор перпендикулярно исходному'],2,
+  'При умножении на положительное число k=2 направление сохраняется, а длина увеличивается в 2 раза.',
+  'Положительный коэффициент не меняет направление, только длину.'));
 STEPS.push(practiceChoice('vec','V4','Если a = k·b и известно, что k &lt; 0, что можно сказать о векторах a и b?',
   null,
-  ['Они коллинеарны и противоположно направлены','Они коллинеарны и сонаправлены','Они не коллинеарны','Они равны по длине'],0,
-  'Отрицательный коэффициент k означает, что векторы лежат на одной прямой (коллинеарны), но смотрят в разные стороны — противоположно направлены.'));
+  ['Они коллинеарны и сонаправлены','Они коллинеарны и противоположно направлены','Они не коллинеарны','Они равны по длине'],1,
+  'Отрицательный коэффициент k означает, что векторы лежат на одной прямой (коллинеарны), но смотрят в разные стороны — противоположно направлены.',
+  'Знак коэффициента k определяет направление, а не сам факт коллинеарности — коллинеарны они в любом случае, если k ≠ 0.'));
 STEPS.push(practiceNumber('vec','V4','Дан вектор a(3; 4), |a| = 5. Чему равна длина вектора −2a?',
   null, '', 10,
-  '|−2a| = |−2|·|a| = 2·5 = 10. Знак минус на длину не влияет.'));
+  '|−2a| = |−2|·|a| = 2·5 = 10. Знак минус на длину не влияет.',
+  'Длина умножается на модуль коэффициента: |k·a| = |k|·|a|.'));
 
 /* ================= V5: Смешанные задачи ================= */
 STEPS.push(topicHeader('vec','V5','Смешанные задачи','Комбинируем длину, коллинеарность, сложение и умножение в одной задаче'));
@@ -641,16 +757,19 @@ STEPS.push(practiceNumber('vec','V5','Точки A(0;0), B(3;4). Найдите 
   'AB = (3; 4). |AB| = √(9+16) = √25 = 5.'));
 STEPS.push(practiceChoice('vec','V5','Даны a(4; −3) и b(−8; 6). Коллинеарны ли они, и если да — каков коэффициент k, при котором b = k·a?',
   null,
-  ['Да, k = −2','Да, k = 2','Нет, не коллинеарны','Да, k = −0,5'],0,
-  '−8/4 = −2 и 6/(−3) = −2 — коэффициенты совпадают, значит b = −2·a, то есть k = −2.'));
+  ['Да, k = 2','Нет, не коллинеарны','Да, k = −2','Да, k = −0,5'],2,
+  '−8/4 = −2 и 6/(−3) = −2 — коэффициенты совпадают, значит b = −2·a, то есть k = −2.',
+  'Раздели любую координату b на соответствующую координату a.'));
 STEPS.push(practiceNumber('vec','V5','В параллелограмме ABCD известны AB(3;1) и AD(2;4) (как в предыдущей теме). Найдите длину диагонали AC.',
-  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:true,diagLabel:'AC'}),
+  parallelogramSVG({cols:9,rows:7,Ax:1,Ay:6,Bx:4,By:5,Dx:3,Dy:2,abLabel:'AB',adLabel:'AD',showDiagonal:false}),
   '', 7.07,
-  'AC = AB + AD = (5; 5). Длина: |AC| = √(5²+5²) = √50 ≈ 7,07.', 0.05));
+  'AC = AB + AD = (5; 5). Длина: |AC| = √(5²+5²) = √50 ≈ 7,07.', 0.05,
+  'Сначала найди координаты диагонали как суммы AB и AD, потом примени формулу длины.'));
 STEPS.push(practiceChoice('vec','V5','Даны a(2;1) и b(−1;3). Найдите длину вектора 2a + b.',
   null,
-  ['√34','√25','√13','√20'],0,
-  '2a = (4;2). 2a+b = (4−1; 2+3) = (3;5). |2a+b| = √(9+25) = √34.'));
+  ['√25','√13','√20','√34'],3,
+  '2a = (4;2). 2a+b = (4−1; 2+3) = (3;5). |2a+b| = √(9+25) = √34.',
+  'Сначала найди координаты 2a, потом сложи с b, и только потом примени формулу длины.'));
 
 /* ---------------- FINAL ---------------- */
 STEPS.push({kind:'final'});
@@ -661,12 +780,12 @@ STEPS.push({kind:'final'});
 var state = {idx:0, results:{}, done:{}};
 function loadState(){
   try{
-    var raw = localStorage.getItem('nr_vectors_state_v1');
+    var raw = localStorage.getItem('nr_vectors_state_v2');
     if(raw){ var d=JSON.parse(raw); state.idx=d.idx||0; state.results=d.results||{}; state.done=d.done||{}; }
   }catch(e){}
 }
 function saveState(){
-  try{ localStorage.setItem('nr_vectors_state_v1', JSON.stringify({idx:state.idx, results:state.results, done:state.done})); }catch(e){}
+  try{ localStorage.setItem('nr_vectors_state_v2', JSON.stringify({idx:state.idx, results:state.results, done:state.done})); }catch(e){}
 }
 
 var practiceIdxs = [];
@@ -724,8 +843,13 @@ function updateProgress(){
 }
 
 function kickerHtml(kind, topicTitle){
-  var labelMap = {theory:'Объяснение', worked:'Разбор', practice:'Практика', intro:'Начало', final:'Итог'};
+  var labelMap = {theory:'Объяснение', worked:'Разбор', practice:'Практика', final:'Итог'};
   return '<div class="kicker"><span class="tag '+kind+'">'+(labelMap[kind]||kind)+'</span>'+(topicTitle?'<span class="topic-name">'+topicTitle+'</span>':'')+'</div>';
+}
+
+function fmtNum(x){
+  var r = Math.round(x*100)/100;
+  return r.toString().replace('.', ',');
 }
 
 function render(){
@@ -736,13 +860,7 @@ function render(){
   card.className = 'card';
   var html = '';
 
-  if(s.kind==='intro'){
-    html += kickerHtml('intro', null);
-    html += '<h2 class="step-title">Векторы: разбираем от и до 👋</h2>';
-    html += '<p class="lead">Пройдём тему по порядку: длина вектора, коллинеарность (сонаправленные и противоположные векторы), сложение векторов — координатно и по картинкам, и умножение вектора на число. В конце — смешанные задачи, где всё это сочетается. Сначала короткое объяснение правила, потом разбор примера с решением, и дальше — задачи для самостоятельного решения с мгновенной проверкой.</p>';
-    html += '<p class="lead" style="margin-top:14px;">Если ответишь неправильно — увидишь подсказку и сможешь попробовать снова, пока не получится. Прогресс сохраняется в этом окне, так что можно возвращаться и продолжать с того же места.</p>';
-  }
-  else if(s.kind==='topicHeader'){
+  if(s.kind==='topicHeader'){
     html += kickerHtml('theory', 'Векторы · '+s.topic);
     html += '<h2 class="step-title">'+s.title+'</h2>';
     html += '<p class="lead">'+s.blurb+'</p>';
@@ -770,14 +888,33 @@ function render(){
     html += kickerHtml('practice', 'Векторы · '+s.topic);
     html += '<h2 class="step-title">Реши самостоятельно</h2>';
     html += '<p class="practice-q">'+s.prompt+'</p>';
-    if(s.visual) html += '<div class="visual">'+s.visual+'</div>';
+
+    if(s.type==='drag'){
+      html += '<div class="visual">'+buildDragSumSVG(s)+'</div>';
+      html += '<div class="drag-caption">Зацепи вектор пальцем или мышкой и перетащи его в пунктирную зону.</div>';
+    } else if(s.visual){
+      html += '<div class="visual">'+s.visual+'</div>';
+    }
+
     if(s.type==='choice'){
       html += '<div class="choices" id="choicesWrap">'+s.options.map(function(opt,i){
         return '<button type="button" class="choice-btn" data-i="'+i+'"><span class="idx">'+(i+1)+'</span><span>'+opt+'</span></button>';
       }).join('')+'</div>';
-    } else {
+    } else if(s.type==='number'){
       html += '<div class="num-input-row"><input type="text" inputmode="decimal" id="numInput" placeholder="ответ" autocomplete="off"/>'+(s.unit?'<span class="unit">'+s.unit+'</span>':'')+'<button class="check-btn" id="checkBtn">Проверить</button></div>';
+    } else if(s.type==='multi'){
+      html += '<div class="multi-wrap" id="multiWrap">'+s.labels.map(function(lbl){
+        return '<button type="button" class="multi-btn" data-lbl="'+lbl+'"><span class="swatch" style="background:'+multiColorFor(s,lbl)+'"></span><span>Вектор '+lbl+'</span></button>';
+      }).join('')+'</div>';
+      html += '<button class="check-btn" id="multiCheckBtn">Проверить</button>';
     }
+
+    var hintText = s.hint || TOPIC_HINTS[s.topic] || '';
+    if(hintText){
+      html += '<div class="help-row"><button type="button" class="help-btn" id="helpBtn">💡 Нужна подсказка?</button></div>';
+      html += '<div class="hint-panel" id="hintPanel">'+hintText+'</div>';
+    }
+
     html += '<div class="feedback" id="feedback"></div>';
   }
   else if(s.kind==='final'){
@@ -786,7 +923,7 @@ function render(){
     var firstTry = practiceIdxs.filter(function(i){return state.results[i]===true;}).length;
     html += kickerHtml('final', null);
     html += '<h2 class="step-title">Готово — тема закрыта 🎉</h2>';
-    html += '<p class="lead">Ты прошла всю тему: длину вектора, коллинеарность и направление, сложение векторов (координатно и по картинкам), умножение вектора на число, и смешанные задачи. Это база для дальнейших тем — скалярное произведение и метод координат опираются именно на это.</p>';
+    html += '<p class="lead">Ты прошла всю тему: длину вектора, коллинеарность и направление, сложение векторов (координатно и на картинках), умножение вектора на число, и смешанные задачи. Это база для дальнейших тем — скалярное произведение и метод координат опираются именно на это.</p>';
     html += '<div class="final-stats">'+
       '<div class="final-stat"><div class="v">'+doneCount+'/'+total+'</div><div class="l">задач решено</div></div>'+
       '<div class="final-stat"><div class="v">'+firstTry+'</div><div class="l">с первой попытки</div></div>'+
@@ -803,6 +940,12 @@ function render(){
   wireStep(s);
 }
 
+function multiColorFor(s,lbl){
+  var colors=['var(--pink)','var(--blue)','var(--lime)','#ffb347'];
+  var idx = s.labels.indexOf(lbl);
+  return colors[idx%colors.length];
+}
+
 function wireStep(s){
   var nextBtn = document.getElementById('nextBtn');
   var backBtn = document.getElementById('backBtn');
@@ -810,6 +953,14 @@ function wireStep(s){
   if(nextBtn) nextBtn.addEventListener('click', function(){
     if(state.idx < STEPS.length-1){ state.idx++; saveState(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
   });
+
+  var helpBtn = document.getElementById('helpBtn');
+  if(helpBtn){
+    helpBtn.addEventListener('click', function(){
+      var panel = document.getElementById('hintPanel');
+      panel.classList.toggle('show');
+    });
+  }
 
   if(s.kind!=='practice') return;
 
@@ -829,6 +980,7 @@ function wireStep(s){
     var buttons = Array.prototype.slice.call(document.querySelectorAll('#choicesWrap .choice-btn'));
     var answered = false;
     var firstAttempt = true;
+    var wrongCount = 0;
     buttons.forEach(function(btn){
       btn.addEventListener('click', function(){
         if(answered) return;
@@ -842,18 +994,32 @@ function wireStep(s){
           answered = true;
           markDone(firstAttempt);
         } else {
-          btn.classList.add('wrong');
+          wrongCount++;
           firstAttempt = false;
-          fb.className = 'feedback show bad';
-          fb.innerHTML = '<span class="ico">✕</span><span><b>Неверно.</b> Проверь ещё раз и попробуй другой вариант.<span class="retry-note">Кнопка снова активна — выбери другой ответ.</span></span>';
-          setTimeout(function(){ btn.classList.remove('wrong'); }, 500);
+          if(wrongCount>=5){
+            answered = true;
+            var correctBtn = buttons[s.correct];
+            correctBtn.classList.remove('disabled-other');
+            correctBtn.classList.add('correct');
+            buttons.forEach(function(b){ if(b!==correctBtn) b.classList.add('disabled-other'); });
+            btn.classList.add('wrong');
+            fb.className = 'feedback show bad';
+            fb.innerHTML = '<span class="ico">i</span><span><b>Показываю верный ответ:</b> '+s.options[s.correct]+'. '+s.explain+'</span>';
+            markDone(false);
+          } else {
+            btn.classList.add('wrong');
+            fb.className = 'feedback show bad';
+            fb.innerHTML = '<span class="ico">✕</span><span><b>Неверно.</b> Попробуй ещё раз.<span class="retry-note">Осталось попыток: '+(5-wrongCount)+'. Можешь нажать «Нужна подсказка?» выше.</span></span>';
+            setTimeout(function(){ btn.classList.remove('wrong'); }, 500);
+          }
         }
       });
     });
-  } else {
+  } else if(s.type==='number'){
     var input = document.getElementById('numInput');
     var checkBtn = document.getElementById('checkBtn');
     var firstAttemptN = true;
+    var wrongCountN = 0;
     function normalize(v){
       v = (v||'').toString().trim().replace(',', '.').replace(/\s+/g,'');
       var f = v.match(/^(-?\d+)\/(\d+)$/);
@@ -874,13 +1040,153 @@ function wireStep(s){
         input.disabled = true; checkBtn.disabled = true;
         markDone(firstAttemptN);
       } else {
+        wrongCountN++;
         firstAttemptN = false;
-        fb.className = 'feedback show bad';
-        fb.innerHTML = '<span class="ico">✕</span><span><b>Неверно.</b> Проверь вычисления ещё раз.<span class="retry-note">Исправь ответ в поле и нажми «Проверить» снова.</span></span>';
+        if(wrongCountN>=5){
+          input.value = fmtNum(s.answer);
+          input.disabled = true; checkBtn.disabled = true;
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">i</span><span><b>Показываю верный ответ:</b> '+fmtNum(s.answer)+(s.unit?(' '+s.unit):'')+'. '+s.explain+'</span>';
+          markDone(false);
+        } else {
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">✕</span><span><b>Неверно.</b> Проверь вычисления ещё раз.<span class="retry-note">Осталось попыток: '+(5-wrongCountN)+'. Можешь нажать «Нужна подсказка?» выше.</span></span>';
+        }
       }
     }
     checkBtn.addEventListener('click', doCheck);
     input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); doCheck(); } });
+  } else if(s.type==='multi'){
+    var mbuttons = Array.prototype.slice.call(document.querySelectorAll('#multiWrap .multi-btn'));
+    var mCheckBtn = document.getElementById('multiCheckBtn');
+    var selected = {};
+    var finished = false;
+    var wrongCountM = 0;
+    mbuttons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(finished) return;
+        var lbl = btn.getAttribute('data-lbl');
+        selected[lbl] = !selected[lbl];
+        btn.classList.toggle('selected');
+      });
+    });
+    mCheckBtn.addEventListener('click', function(){
+      if(finished) return;
+      var fb = document.getElementById('feedback');
+      var chosen = Object.keys(selected).filter(function(k){return selected[k];}).sort();
+      var correct = s.correctLabels.slice().sort();
+      var isMatch = chosen.length===correct.length && chosen.every(function(v,i){return v===correct[i];});
+      if(isMatch){
+        finished = true;
+        mbuttons.forEach(function(b){
+          var lbl=b.getAttribute('data-lbl');
+          if(correct.indexOf(lbl)>=0) b.classList.add('correct');
+          b.classList.add('locked');
+        });
+        mCheckBtn.disabled = true;
+        fb.className = 'feedback show ok';
+        fb.innerHTML = '<span class="ico">✓</span><span><b>Верно!</b> '+s.explain+'</span>';
+        markDone(wrongCountM===0);
+      } else {
+        wrongCountM++;
+        if(wrongCountM>=5){
+          finished = true;
+          mbuttons.forEach(function(b){
+            var lbl=b.getAttribute('data-lbl');
+            if(correct.indexOf(lbl)>=0) b.classList.add('correct');
+            else if(selected[lbl]) b.classList.add('wrong');
+            b.classList.add('locked');
+          });
+          mCheckBtn.disabled = true;
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">i</span><span><b>Показываю верный ответ:</b> вектор(ы) '+correct.join(', ')+'. '+s.explain+'</span>';
+          markDone(false);
+        } else {
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">✕</span><span><b>Не совсем.</b> Попробуй другой набор.<span class="retry-note">Осталось попыток: '+(5-wrongCountM)+'. Можешь нажать «Нужна подсказка?» выше.</span></span>';
+        }
+      }
+    });
+  } else if(s.type==='drag'){
+    var geom = s._drag;
+    var group = document.getElementById('dragMovable');
+    var svgEl = document.getElementById('dragSvg');
+    var dragging=false, startClientX=0, startClientY=0, startTx=0, startTy=0, curTx=0, curTy=0;
+    var wrongCountD = 0, finishedD = false;
+    var tolPx = geom.cell*0.5;
+
+    function setTransform(tx,ty){
+      group.setAttribute('transform','translate('+(geom.baseX+tx)+','+(geom.baseY+ty)+')');
+    }
+    function getScale(){
+      var rect = svgEl.getBoundingClientRect();
+      var vb = svgEl.viewBox.baseVal;
+      return rect.width>0 ? (vb.width/rect.width) : 1;
+    }
+    function drawSumLine(){
+      var g = document.getElementById('sumLineGroup');
+      var X0=geom.aStartX, Y0=geom.aStartY, X1=geom.targetX+geom.deltaX, Y1=geom.targetY+geom.deltaY;
+      var dx=X1-X0, dy=Y1-Y0, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len, ah=10, aw=7;
+      var bx=X1-ux*ah, by=Y1-uy*ah, px=-uy, py=ux;
+      var p1x=bx+px*aw/2, p1y=by+py*aw/2, p2x=bx-px*aw/2, p2y=by-py*aw/2;
+      g.innerHTML = '<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="var(--lime)" stroke-width="2.6" stroke-dasharray="7 5" stroke-linecap="round"/>'+
+        '<polygon points="'+X1+','+Y1+' '+p1x+','+p1y+' '+p2x+','+p2y+'" fill="var(--lime)"/>'+
+        '<text x="'+((X0+X1)/2+12)+'" y="'+((Y0+Y1)/2-6)+'" font-family="Unbounded" font-weight="700" font-size="13" fill="var(--lime)">'+(s.sumLabel||'a+b')+'</text>';
+    }
+
+    group.addEventListener('pointerdown', function(e){
+      if(finishedD) return;
+      dragging = true;
+      try{ group.setPointerCapture(e.pointerId); }catch(err){}
+      startClientX = e.clientX; startClientY = e.clientY;
+      startTx = curTx; startTy = curTy;
+      group.style.cursor = 'grabbing';
+    });
+    group.addEventListener('pointermove', function(e){
+      if(!dragging) return;
+      var scale = getScale();
+      curTx = startTx + (e.clientX-startClientX)*scale;
+      curTy = startTy + (e.clientY-startClientY)*scale;
+      setTransform(curTx,curTy);
+    });
+    function finishDrag(e){
+      if(!dragging) return;
+      dragging = false;
+      group.style.cursor = 'grab';
+      try{ group.releasePointerCapture(e.pointerId); }catch(err){}
+      var achievedX = geom.baseX+curTx, achievedY = geom.baseY+curTy;
+      var dist = Math.hypot(achievedX-geom.targetX, achievedY-geom.targetY);
+      var fb = document.getElementById('feedback');
+      if(dist<=tolPx){
+        curTx = geom.targetX-geom.baseX; curTy = geom.targetY-geom.baseY;
+        setTransform(curTx,curTy);
+        finishedD = true;
+        drawSumLine();
+        fb.className = 'feedback show ok';
+        fb.innerHTML = '<span class="ico">✓</span><span><b>Верно!</b> '+s.explain+'</span>';
+        markDone(wrongCountD===0);
+        group.style.cursor = 'default';
+      } else {
+        wrongCountD++;
+        if(wrongCountD>=5){
+          curTx = geom.targetX-geom.baseX; curTy = geom.targetY-geom.baseY;
+          setTransform(curTx,curTy);
+          finishedD = true;
+          drawSumLine();
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">i</span><span><b>Показываю верное положение.</b> '+s.explain+'</span>';
+          markDone(false);
+          group.style.cursor = 'default';
+        } else {
+          curTx = 0; curTy = 0;
+          setTransform(0,0);
+          fb.className = 'feedback show bad';
+          fb.innerHTML = '<span class="ico">✕</span><span>Не совсем — подвинь вектор так, чтобы его начало (кружок) точно совпало с концом вектора a (пунктирная зона).<span class="retry-note">Осталось попыток: '+(5-wrongCountD)+'. Можешь нажать «Нужна подсказка?» выше.</span></span>';
+        }
+      }
+    }
+    group.addEventListener('pointerup', finishDrag);
+    group.addEventListener('pointercancel', finishDrag);
   }
 }
 
