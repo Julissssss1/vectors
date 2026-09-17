@@ -227,6 +227,9 @@
 
   /* ---------- Drag caption ---------- */
   .drag-caption{font-size:12.5px; color:var(--text-faint); margin-top:2px; text-align:center;}
+  .op-badge{display:inline-block; font-family:'Unbounded'; font-weight:700; font-size:12.5px; padding:6px 14px; border-radius:100px; margin-bottom:12px;}
+  .op-badge.add{background:var(--lime-soft); color:var(--lime); border:1px solid rgba(199,255,77,0.35);}
+  .op-badge.sub{background:var(--pink-soft); color:var(--pink); border:1px solid rgba(255,79,154,0.35);}
 
   /* ---------- Footer nav ---------- */
   .stepnav{display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:12px;}
@@ -395,14 +398,25 @@ function parallelogramSVG(opts){
   return '<svg viewBox="0 0 '+gp.w+' '+gp.h+'" width="100%" style="max-width:360px" role="img">'+s+'</svg>';
 }
 
-/* Parallelogram anchored at the origin of a numbered axis grid, so AB/AD (and the
-   optional diagonal) can be double-checked by counting squares, same idea as axisVectorSVG. */
-function parallelogramAxisSVG(opts){
+/* (old parallelogramAxisSVG removed — superseded by the more general quadAxisSVG above) */
+
+/* General quadrilateral (rectangle or parallelogram) anchored at A=(0,0) on a numbered axis
+   grid. ab/ad define sides AB and AD; C is derived as the parallelogram's fourth corner.
+   `arrows` lets the caller draw any subset of edges/diagonals from any corner to any corner
+   (e.g. A->B labeled "AB", B->C labeled "BC", A->C labeled "AC" as a dashed diagonal) —
+   this is what makes it possible to frame the same shape as "AB + BC = AC" or
+   "AB + AD = AC" or a subtraction task on the other diagonal, without a new function each time. */
+function quadAxisSVG(opts){
   var cell=32, padL=32,padT=18,padB=30,padR=20;
   var cols=opts.cols, rows=opts.rows;
   function X(cx){ return padL+cx*cell; }
   function Y(cy){ return padT+(rows-cy)*cell; }
   var w=padL+cols*cell+padR, h=padT+rows*cell+padB;
+  var A={x:0,y:0};
+  var B={x:opts.ab.x,y:opts.ab.y};
+  var D={x:opts.ad.x,y:opts.ad.y};
+  var C={x:B.x+D.x,y:B.y+D.y};
+  var pts={A:A,B:B,C:C,D:D};
   var s='';
   for(var c=0;c<=cols;c++) s+='<line x1="'+X(c)+'" y1="'+padT+'" x2="'+X(c)+'" y2="'+(padT+rows*cell)+'" stroke="var(--grid-line)" stroke-width="1"/>';
   for(var r=0;r<=rows;r++) s+='<line x1="'+padL+'" y1="'+Y(r)+'" x2="'+(padL+cols*cell)+'" y2="'+Y(r)+'" stroke="var(--grid-line)" stroke-width="1"/>';
@@ -416,12 +430,17 @@ function parallelogramAxisSVG(opts){
   }
   s+='<text x="'+(X(0)-8)+'" y="'+(Y(0)+16)+'" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">0</text>';
 
-  function arrow(x0,y0,x1,y1,color,label,side){
-    var X0=X(x0),Y0=Y(y0),X1=X(x1),Y1=Y(y1);
+  if(opts.showOutline!==false){
+    var pa=[X(A.x),Y(A.y)], pb=[X(B.x),Y(B.y)], pc=[X(C.x),Y(C.y)], pd=[X(D.x),Y(D.y)];
+    s+='<polyline points="'+pa[0]+','+pa[1]+' '+pb[0]+','+pb[1]+' '+pc[0]+','+pc[1]+' '+pd[0]+','+pd[1]+' '+pa[0]+','+pa[1]+'" fill="none" stroke="var(--border)" stroke-width="2" stroke-dasharray="4 4"/>';
+  }
+
+  function arrow(p0,p1,color,label,side,dashed){
+    var X0=X(p0.x),Y0=Y(p0.y),X1=X(p1.x),Y1=Y(p1.y);
     var dx=X1-X0,dy=Y1-Y0,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,ah=10,aw=6.5;
     var bx=X1-ux*ah, by=Y1-uy*ah, px=-uy,py=ux;
     var p1x=bx+px*aw/2,p1y=by+py*aw/2,p2x=bx-px*aw/2,p2y=by-py*aw/2;
-    var out='<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="'+color+'" stroke-width="3" stroke-linecap="round"/>';
+    var out='<line x1="'+X0+'" y1="'+Y0+'" x2="'+bx+'" y2="'+by+'" stroke="'+color+'" stroke-width="3" stroke-linecap="round"'+(dashed?' stroke-dasharray="7 5"':'')+'/>';
     out+='<polygon points="'+X1+','+Y1+' '+p1x+','+p1y+' '+p2x+','+p2y+'" fill="'+color+'"/>';
     if(label){
       var mx=(X0+X1)/2, my=(Y0+Y1)/2;
@@ -432,12 +451,18 @@ function parallelogramAxisSVG(opts){
     return out;
   }
 
-  s += arrow(0,0, opts.ab.x,opts.ab.y, 'var(--blue)', opts.abLabel||'a', 'above');
-  s += arrow(0,0, opts.ad.x,opts.ad.y, 'var(--pink)', opts.adLabel||'b', 'left');
-  if(opts.showDiagonal){
-    s += arrow(0,0, opts.ab.x+opts.ad.x, opts.ab.y+opts.ad.y, 'var(--lime)', opts.diagLabel||'AC', 'right');
+  var colors=['var(--blue)','var(--pink)','var(--lime)','#ffb347'];
+  (opts.arrows||[]).forEach(function(spec,i){
+    s += arrow(pts[spec.from], pts[spec.to], spec.color||colors[i%colors.length], spec.label, spec.side||'above', spec.dashed);
+  });
+
+  if(opts.showPoints!==false){
+    ['A','B','C','D'].forEach(function(k){
+      var p=pts[k];
+      s+='<circle cx="'+X(p.x)+'" cy="'+Y(p.y)+'" r="3.2" fill="var(--text)"/>';
+      s+='<text x="'+X(p.x)+'" y="'+(Y(p.y)-9)+'" font-family="Unbounded" font-weight="700" font-size="12" fill="var(--text)" text-anchor="middle">'+k+'</text>';
+    });
   }
-  s += '<circle cx="'+X(0)+'" cy="'+Y(0)+'" r="3.2" fill="var(--text)"/>';
   return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:340px" role="img">'+s+'</svg>';
 }
 
@@ -526,8 +551,8 @@ function practiceNumber(mod,topic,prompt,visual,unit,answer,explain,tolerance,hi
 function practiceMulti(mod,topic,prompt,visual,labels,correctLabels,explain,hint){
   return {mod:mod,topic:topic,kind:'practice',type:'multi',prompt:prompt,visual:visual,labels:labels,correctLabels:correctLabels,explain:explain,hint:hint};
 }
-function practiceDrag(mod,topic,prompt,cols,rows,a,movable,sumLabel,explain,hint){
-  return {mod:mod,topic:topic,kind:'practice',type:'drag',prompt:prompt,cols:cols,rows:rows,a:a,movable:movable,sumLabel:sumLabel,explain:explain,hint:hint};
+function practiceDrag(mod,topic,prompt,cols,rows,a,movable,sumLabel,opType,explain,hint){
+  return {mod:mod,topic:topic,kind:'practice',type:'drag',prompt:prompt,cols:cols,rows:rows,a:a,movable:movable,sumLabel:sumLabel,opType:opType,explain:explain,hint:hint};
 }
 function topicHeader(mod,topic,title,blurb){
   return {mod:mod,topic:topic,kind:'topicHeader',title:title,blurb:blurb};
@@ -687,11 +712,11 @@ STEPS.push(practiceChoice('vec','V3','Даны a(−3; 5) и b(4; −2). Най�
   'a + b = (−3+4; 5+(−2)) = (1; 3).',
   'Сложи отдельно x-координаты и отдельно y-координаты, аккуратно со знаками.'));
 STEPS.push(practiceDrag('vec','V3',
-  'Даны векторы a и b. Перетащи вектор b так, чтобы его начало (кружок) совпало с концом вектора a — попади в пунктирную зону. Так получится сумма a + b по правилу треугольника.',
+  'Перетащи вектор b так, чтобы его начало (кружок) совпало с концом вектора a — попади в пунктирную зону. Так получится сумма по правилу треугольника.',
   11,9,
   {x0:1,y0:7,x1:4,y1:6,label:'a'},
   {x0:7,y0:7,x1:9,y1:4,label:'b'},
-  'a+b',
+  'a+b','add',
   'Сумма a + b — это вектор, ведущий из начала a в конец приложенного к нему вектора b. Именно так ты и построила сумму.',
   'Зацепи вектор b за кружок на его начале и подвинь так, чтобы этот кружок точно встал на конец (стрелку) вектора a.'));
 STEPS.push(practiceDrag('vec','V3',
@@ -699,15 +724,15 @@ STEPS.push(practiceDrag('vec','V3',
   11,9,
   {x0:1,y0:7,x1:2,y1:3,label:'a'},
   {x0:6,y0:7,x1:10,y1:6,label:'b'},
-  'a+b',
+  'a+b','add',
   'Сумма a + b получается, если приложить начало b к концу a — результат идёт от начала a до конца b.',
   'Зацепи вектор b за кружок на его начале и подвинь так, чтобы этот кружок точно встал на конец вектора a.'));
 STEPS.push(practiceDrag('vec','V3',
-  'Даны векторы a и b. Так как a − b = a + (−b), вектор −b (такой же длины, но в обратную сторону) уже показан на рисунке. Перетащи −b так, чтобы его начало совпало с концом вектора a — так получится разность a − b.',
+  'Так как a − b = a + (−b), вектор −b (такой же длины, но в обратную сторону) уже показан на рисунке. Перетащи −b так, чтобы его начало совпало с концом вектора a.',
   11,9,
   {x0:1,y0:7,x1:5,y1:6,label:'a'},
   {x0:8,y0:7,x1:6,y1:3,label:'−b'},
-  'a−b',
+  'a−b','sub',
   'Так как a − b = a + (−b), мы взяли вектор, противоположный b, и приложили его к концу вектора a — получили разность a − b.',
   'Действуй так же, как при сложении: зацепи начало вектора −b и совмести его с концом вектора a.'));
 STEPS.push(practiceDrag('vec','V3',
@@ -715,15 +740,31 @@ STEPS.push(practiceDrag('vec','V3',
   11,9,
   {x0:1,y0:7,x1:3,y1:4,label:'a'},
   {x0:8,y0:6,x1:5,y1:4,label:'−b'},
-  'a−b',
+  'a−b','sub',
   'Приложив −b к концу a, мы построили разность a − b — то же самое, что сложение с противоположным вектором.',
   'Действуй так же, как при сложении: зацепи начало вектора −b и совмести его с концом вектора a.'));
 STEPS.push(practiceNumber('vec','V3','В параллелограмме ABCD известны векторы AB(3; 1) и AD(2; 4). Найдите x-координату диагонали AC = AB + AD.',
-  parallelogramAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},abLabel:'AB',adLabel:'AD',showDiagonal:false}),
+  quadAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},arrows:[{from:'A',to:'B',label:'AB'},{from:'A',to:'D',label:'AD'}]}),
   '', 5,
   'AC = AB + AD = (3+2; 1+4) = (5; 5). Ответ на x-координату: 5.',
   0.02,
   'Диагональ AC равна сумме векторов сторон AB и AD — сложи их координаты по отдельности.'));
+STEPS.push(practiceChoice('vec','V3','В прямоугольнике ABCD известны векторы сторон AB(6; 0) и BC(0; 8). Чему равен вектор AC (диагональ)?',
+  quadAxisSVG({cols:9,rows:9,ab:{x:6,y:0},ad:{x:0,y:8},arrows:[{from:'A',to:'B',label:'AB'},{from:'B',to:'C',label:'BC'}]}),
+  ['(6; 0)','(8; 6)','(6; 8)','(0; 8)'],2,
+  'AC = AB + BC = (6+0; 0+8) = (6; 8). В прямоугольнике вектор BC равен вектору AD, поэтому та же формула сложения сторон работает и здесь.',
+  'Диагональ AC — это сумма векторов двух соседних сторон: AB + BC. Сложи их координаты.'));
+STEPS.push(practiceNumber('vec','V3','В параллелограмме ABCD известны AB(4; 1) и AD(1; 3). Найдите y-координату диагонали AC = AB + AD.',
+  quadAxisSVG({cols:7,rows:6,ab:{x:4,y:1},ad:{x:1,y:3},arrows:[{from:'A',to:'B',label:'AB'},{from:'A',to:'D',label:'AD'}]}),
+  '', 4,
+  'AC = AB + AD = (4+1; 1+3) = (5; 4). Ответ на y-координату: 4.',
+  0.02,
+  'Сложи y-координаты векторов AB и AD — это и есть y-координата диагонали AC.'));
+STEPS.push(practiceChoice('vec','V3','В том же параллелограмме ABCD (AB(4; 1), AD(1; 3)) найдите координаты второй диагонали — вектора BD (из вершины B в вершину D).',
+  null,
+  ['(5; 4)','(3; −2)','(−3; 2)','(−3; −2)'],2,
+  'BD = AD − AB (так как D и B оба измеряются от A, вектор из B в D — это разность: AD − AB = (1−4; 3−1) = (−3; 2)). Вторая диагональ находится через вычитание, а не сложение — в этом её отличие от AC.',
+  'Вектор BD — это разность AD − AB, а не сумма. Вычти координаты AB из координат AD.'));
 STEPS.push(practiceChoice('vec','V3','Даны три вектора: a(1; 2), b(3; −1), c(−2; 4). Найдите a + b + c.',
   null,
   ['(6; 3)','(0; 5)','(6; 5)','(2; 5)'],3,
@@ -816,7 +857,7 @@ STEPS.push(practiceChoice('vec','V5','Даны a(4; −3) и b(−8; 6). Кол�
   '−8/4 = −2 и 6/(−3) = −2 — коэффициенты совпадают, значит b = −2·a, то есть k = −2.',
   'Раздели любую координату b на соответствующую координату a.'));
 STEPS.push(practiceNumber('vec','V5','В параллелограмме ABCD известны AB(3;1) и AD(2;4) (как в предыдущей теме). Найдите длину диагонали AC.',
-  parallelogramAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},abLabel:'AB',adLabel:'AD',showDiagonal:false}),
+  quadAxisSVG({cols:7,rows:6,ab:{x:3,y:1},ad:{x:2,y:4},arrows:[{from:'A',to:'B',label:'AB'},{from:'A',to:'D',label:'AD'}]}),
   '', 7.07,
   'AC = AB + AD = (5; 5). Длина: |AC| = √(5²+5²) = √50 ≈ 7,07.', 0.05,
   'Сначала найди координаты диагонали как суммы AB и AD, потом примени формулу длины.'));
@@ -941,7 +982,12 @@ function render(){
   }
   else if(s.kind==='practice'){
     html += kickerHtml('practice', 'Векторы · '+s.topic);
-    html += '<h2 class="step-title">Реши самостоятельно</h2>';
+    var titleText = 'Реши самостоятельно';
+    if(s.type==='drag'){ titleText = s.opType==='sub' ? 'Найди разность векторов' : 'Найди сумму векторов'; }
+    html += '<h2 class="step-title">'+titleText+'</h2>';
+    if(s.type==='drag'){
+      html += '<div class="op-badge '+(s.opType==='sub'?'sub':'add')+'">'+(s.opType==='sub'?'Здесь нужна РАЗНОСТЬ: a − b':'Здесь нужна СУММА: a + b')+'</div>';
+    }
     html += '<p class="practice-q">'+s.prompt+'</p>';
 
     if(s.type==='drag'){
